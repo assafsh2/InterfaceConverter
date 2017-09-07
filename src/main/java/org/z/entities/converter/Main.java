@@ -23,14 +23,14 @@ import akka.stream.javadsl.Source;
 
 public class Main {
 
-	public static boolean testing = true;
+	public static boolean testing = false;
 
 	public static void main(String[] args) throws InterruptedException {
 
 		System.out.println("KAFKA_ADDRESS::::::::" + System.getenv("KAFKA_ADDRESS"));
 		System.out.println("SCHEMA_REGISTRY_ADDRESS::::::::" + System.getenv("SCHEMA_REGISTRY_ADDRESS"));
 		System.out.println("SCHEMA_REGISTRY_IDENTITY::::::::" + System.getenv("SCHEMA_REGISTRY_IDENTITY")); 
-		System.out.println("INTERFACE_NAME::::::::" + System.getenv("INTERFACES_NAME"));
+		System.out.println("INTERFACE_NAME::::::::" + System.getenv("INTERFACE_NAME"));
 
 		final ActorSystem system = ActorSystem.create();
 		SchemaRegistryClient schemaRegistry;
@@ -41,7 +41,7 @@ public class Main {
 			interfaceName = "source0";
 		}
 		else {
-			interfaceName = System.getenv("INTERFACES_NAME");
+			interfaceName = System.getenv("INTERFACE_NAME");
 			schemaRegistry = new CachedSchemaRegistryClient(System.getenv("SCHEMA_REGISTRY_ADDRESS"), Integer.parseInt(System.getenv("SCHEMA_REGISTRY_IDENTITY")));		 
 		}
 		Utils utils = new Utils(system,schemaRegistry); 
