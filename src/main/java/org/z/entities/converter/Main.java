@@ -14,6 +14,12 @@ import org.apache.avro.Schema;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;  
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.z.entities.schema.basicEntityAttributes;
+import org.z.entities.schema.category;
+import org.z.entities.schema.coordinate;
+import org.z.entities.schema.detectionEvent;
+import org.z.entities.schema.generalEntityAttributes;
+import org.z.entities.schema.nationality;
 
 import akka.Done;
 import akka.actor.ActorSystem; 
@@ -31,7 +37,7 @@ public class Main {
 
 	public static boolean testing = false;
 
-	public static void main(String[] args) throws InterruptedException, IOException, RestClientException {
+	public static void main(String[] args) throws Exception {
 
 		System.out.println("KAFKA_ADDRESS::::::::" + System.getenv("KAFKA_ADDRESS"));
 		System.out.println("SCHEMA_REGISTRY_ADDRESS::::::::" + System.getenv("SCHEMA_REGISTRY_ADDRESS"));
@@ -41,14 +47,14 @@ public class Main {
 		final ActorSystem system = ActorSystem.create();
 		SchemaRegistryClient schemaRegistry;
 		String interfaceName;
-		
+
 		if(testing) {
 			schemaRegistry = new MockSchemaRegistryClient();
-			interfaceName = "source0";
+			interfaceName = "source0"; 
 		}
 		else {
 			interfaceName = System.getenv("INTERFACE_NAME");
- 
+
 			schemaRegistry = new CachedSchemaRegistryClient(System.getenv("SCHEMA_REGISTRY_ADDRESS"), Integer.parseInt(System.getenv("SCHEMA_REGISTRY_IDENTITY")));			
 			registerSchema(schemaRegistry);
 
@@ -62,44 +68,46 @@ public class Main {
 		}
 
 		final ActorMaterializer materializer = ActorMaterializer.create(system); 	
-	 	Consumer.plainSource(utils.createConsumerSettings(system),
-	 			(Subscription) Subscriptions.assignment(new TopicPartition(interfaceName+"-raw-data", 0)))
-	 			.via(Flow.fromFunction(converter::apply))
-		 		.to(utils.getSink())
-		 		.run(materializer);
+		Consumer.plainSource(utils.createConsumerSettings(system),
+				(Subscription) Subscriptions.assignment(new TopicPartition(interfaceName+"-raw-data", 0)))
+				.via(Flow.fromFunction(converter::apply))
+				.to(utils.getSink())
+				.run(materializer);
 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 				system.terminate();	 
 			}
 		});
-		 
+
 		if(testing) { 
 			writeSomeData(system,materializer);
 		}
-		
+
 		System.out.println("Ready");
 		while(true) {
 			Thread.sleep(3000);
 		} 
- 
+
 	}  
-	
-	public static void registerSchema(SchemaRegistryClient schemaRegistry) throws IOException, RestClientException {
-		
-		Schema.Parser parser = new Schema.Parser();
-		schemaRegistry.register("detectionEvent",
-				parser.parse("{\"type\": \"record\", "
-						+ "\"name\": \"detectionEvent\", "
-						+ "\"doc\": \"This is a schema for entity detection report event\", "
-						+ "\"fields\": ["
-						+ "{ \"name\": \"sourceName\", \"type\": \"string\", \"doc\" : \"interface name\" }, "
-						+ "{ \"name\": \"externalSystemID\", \"type\": \"string\", \"doc\":\"external system ID\"},"
-						+ "{ \"name\": \"dataOffset\", \"type\": \"long\", \"doc\":\"Data Offset\"}"
-						+ "]}"));
- 
+
+	public static void registerSchema(SchemaRegistryClient schemaRegistry) throws Exception {
+
+		try {
+			schemaRegistry.register("detectionEvent",detectionEvent.SCHEMA$);
+			schemaRegistry.register("category",category.SCHEMA$); 
+			schemaRegistry.register("coordinate",coordinate.SCHEMA$); 
+			schemaRegistry.register("nationality",nationality.SCHEMA$); 		
+			schemaRegistry.register("basicEntityAttributes",basicEntityAttributes.SCHEMA$); 
+			schemaRegistry.register("generalEntityAttributes",generalEntityAttributes.SCHEMA$); 
+
+		} catch (IOException | RestClientException e) {
+
+			e.printStackTrace();
+			throw e;
+		} 
 	}
-	
+
 	public static void writeSomeData(ActorSystem system, ActorMaterializer materializer ) { 
 
 		/*
@@ -123,8 +131,8 @@ public class Main {
 		String lat = "4.4";
 		String xLong = "6.6";
 		String sourceName = System.getenv("INTERFACES_NAME");
-		
-		
+
+
 		String json = "{\"id\":\""+externalSystemID+"\"," 
 				+"\"lat\":\""+lat+"\"," 
 				+"\"xlong\":\""+xLong+"\"," 
@@ -146,4 +154,4 @@ public class Main {
 		.run(materializer); 
 	} 
 }
- 
+

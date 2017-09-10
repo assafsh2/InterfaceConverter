@@ -14,7 +14,7 @@ import org.z.entities.schema.category;
 import org.z.entities.schema.coordinate;
 import org.z.entities.schema.generalEntityAttributes;
 import org.z.entities.schema.nationality;
-
+ 
 public class Source1Converter extends AbstractConverter {
 
 	public Source1Converter(String interfaceName) {
