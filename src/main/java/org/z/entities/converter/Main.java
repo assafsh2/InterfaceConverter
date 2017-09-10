@@ -37,15 +37,6 @@ public class Main {
 		System.out.println("SCHEMA_REGISTRY_IDENTITY::::::::" + System.getenv("SCHEMA_REGISTRY_IDENTITY")); 
 		System.out.println("INTERFACE_NAME::::::::" + System.getenv("INTERFACE_NAME"));
 		
-		System.out.println("CLASSPATH");
-        ClassLoader sysClassLoader = ClassLoader.getSystemClassLoader();
-        URL[] urls = ((URLClassLoader)sysClassLoader).getURLs();
- 
-        for(int i=0; i< urls.length; i++)
-        {
-            System.out.println(urls[i].getFile());
-        }  
-
 		final ActorSystem system = ActorSystem.create();
 		SchemaRegistryClient schemaRegistry;
 		String interfaceName;

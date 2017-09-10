@@ -1,11 +1,10 @@
 package org.z.entities.converter;
 
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
-import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException; 
+import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
@@ -16,15 +15,14 @@ import java.util.concurrent.CompletionStage;
 
 import joptsimple.internal.Strings;
 
-import org.apache.avro.Schema; 
+import org.apache.avro.Schema;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord; 
-import org.apache.kafka.common.serialization.StringDeserializer; 
-import org.z.entities.converter.implement.Source1Converter;
-import org.z.entities.converter.model.EntityReport;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.z.entities.converter.model.EntityReport;
 
 import akka.Done;
 import akka.actor.ActorSystem;
@@ -76,8 +74,14 @@ public class Utils {
 
 	public <converterClass> AbstractConverter getConverterForInterface(String interfaceName) throws Exception     {
 		
+		/*
+		 * To create a new converter for interface - 
+		 * 1. Create a new class that extends from AbstractConverter
+		 * 2. Add the interface name and the full class name to converter_for_interface.properties 
+		 * */		
 	
-        try (InputStream in = new FileInputStream("resources/converter_for_interface.properties")) {
+		String directory =    System.getenv("HOME")+"/src/resources";
+        try (InputStream in = new FileInputStream(directory+"/converter_for_interface.properties")) {
 
             Properties prop = new Properties();
             prop.load(in);  
