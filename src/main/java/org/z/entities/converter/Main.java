@@ -4,11 +4,17 @@ package org.z.entities.converter;
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient; 
+import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
+
+import java.io.IOException;
 import java.util.Arrays; 
 import java.util.concurrent.CompletionStage; 
+
+import org.apache.avro.Schema;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;  
 import org.apache.kafka.common.serialization.StringSerializer;
+
 import akka.Done;
 import akka.actor.ActorSystem; 
 import akka.kafka.ProducerSettings;
@@ -23,14 +29,14 @@ import akka.stream.javadsl.Source;
 
 public class Main {
 
-	public static boolean testing = true;
+	public static boolean testing = false;
 
-	public static void main(String[] args) throws InterruptedException {
+	public static void main(String[] args) throws InterruptedException, IOException, RestClientException {
 
 		System.out.println("KAFKA_ADDRESS::::::::" + System.getenv("KAFKA_ADDRESS"));
 		System.out.println("SCHEMA_REGISTRY_ADDRESS::::::::" + System.getenv("SCHEMA_REGISTRY_ADDRESS"));
 		System.out.println("SCHEMA_REGISTRY_IDENTITY::::::::" + System.getenv("SCHEMA_REGISTRY_IDENTITY")); 
-		System.out.println("INTERFACE_NAME::::::::" + System.getenv("INTERFACES_NAME"));
+		System.out.println("INTERFACE_NAME::::::::" + System.getenv("INTERFACE_NAME"));
 
 		final ActorSystem system = ActorSystem.create();
 		SchemaRegistryClient schemaRegistry;
@@ -41,8 +47,10 @@ public class Main {
 			interfaceName = "source0";
 		}
 		else {
-			interfaceName = System.getenv("INTERFACES_NAME");
-			schemaRegistry = new CachedSchemaRegistryClient(System.getenv("SCHEMA_REGISTRY_ADDRESS"), Integer.parseInt(System.getenv("SCHEMA_REGISTRY_IDENTITY")));		 
+			interfaceName = System.getenv("INTERFACE_NAME");
+			schemaRegistry = new CachedSchemaRegistryClient(System.getenv("SCHEMA_REGISTRY_ADDRESS"), Integer.parseInt(System.getenv("SCHEMA_REGISTRY_IDENTITY")));
+			
+			registerSchema(schemaRegistry);
 		}
 		Utils utils = new Utils(system,schemaRegistry); 
 		AbstractConverter converter = utils.getConverterForInterface(interfaceName);
@@ -75,6 +83,21 @@ public class Main {
 		} 
  
 	}  
+	
+	public static void registerSchema(SchemaRegistryClient schemaRegistry) throws IOException, RestClientException {
+		
+		Schema.Parser parser = new Schema.Parser();
+		schemaRegistry.register("detectionEvent",
+				parser.parse("{\"type\": \"record\", "
+						+ "\"name\": \"detectionEvent\", "
+						+ "\"doc\": \"This is a schema for entity detection report event\", "
+						+ "\"fields\": ["
+						+ "{ \"name\": \"sourceName\", \"type\": \"string\", \"doc\" : \"interface name\" }, "
+						+ "{ \"name\": \"externalSystemID\", \"type\": \"string\", \"doc\":\"external system ID\"},"
+						+ "{ \"name\": \"dataOffset\", \"type\": \"long\", \"doc\":\"Data Offset\"}"
+						+ "]}"));
+ 
+	}
 	
 	public static void writeSomeData(ActorSystem system, ActorMaterializer materializer ) { 
 

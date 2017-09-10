@@ -3,9 +3,10 @@ package org.z.entities.converter.implement;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 
 import java.io.IOException;
-import org.apache.avro.generic.GenericRecord; 
+
+import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.producer.ProducerRecord; 
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.z.entities.converter.AbstractConverter;
 import org.z.entities.converter.model.EntityReport;
 import org.z.entities.schema.basicEntityAttributes;

@@ -3,9 +3,11 @@ package org.z.entities.converter;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException; 
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.concurrent.CompletionStage;
+
 import org.apache.avro.Schema; 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord; 
@@ -15,6 +17,7 @@ import org.z.entities.converter.model.EntityReport;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+
 import akka.Done;
 import akka.actor.ActorSystem;
 import akka.kafka.ConsumerSettings;
@@ -105,7 +108,6 @@ public class Utils {
 	}
 
 	public String getKafkaURL() {
-
 		String kafkaUrl;
 		if(Main.testing) {
 			kafkaUrl = "192.168.0.51:9092";
