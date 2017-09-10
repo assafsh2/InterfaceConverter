@@ -48,9 +48,10 @@ public class Main {
 		}
 		else {
 			interfaceName = System.getenv("INTERFACE_NAME");
-			schemaRegistry = new CachedSchemaRegistryClient(System.getenv("SCHEMA_REGISTRY_ADDRESS"), Integer.parseInt(System.getenv("SCHEMA_REGISTRY_IDENTITY")));
-			
+ 
+			schemaRegistry = new CachedSchemaRegistryClient(System.getenv("SCHEMA_REGISTRY_ADDRESS"), Integer.parseInt(System.getenv("SCHEMA_REGISTRY_IDENTITY")));			
 			registerSchema(schemaRegistry);
+
 		}
 		Utils utils = new Utils(system,schemaRegistry); 
 		AbstractConverter converter = utils.getConverterForInterface(interfaceName);
