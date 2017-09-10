@@ -5,24 +5,15 @@ import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient; 
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
-
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays; 
 import java.util.concurrent.CompletionStage; 
-
-import org.apache.avro.Schema;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;  
-import org.apache.kafka.common.serialization.StringSerializer;
-import org.z.entities.schema.basicEntityAttributes;
-import org.z.entities.schema.category;
-import org.z.entities.schema.coordinate;
+import org.apache.kafka.common.serialization.StringSerializer; 
 import org.z.entities.schema.detectionEvent;
-import org.z.entities.schema.generalEntityAttributes;
-import org.z.entities.schema.nationality;
-
 import akka.Done;
 import akka.actor.ActorSystem; 
 import akka.kafka.ProducerSettings;
@@ -47,10 +38,7 @@ public class Main {
 		System.out.println("INTERFACE_NAME::::::::" + System.getenv("INTERFACE_NAME"));
 		
 		System.out.println("CLASSPATH");
-        //Get the System Classloader 
         ClassLoader sysClassLoader = ClassLoader.getSystemClassLoader();
- 
-        //Get the URLs
         URL[] urls = ((URLClassLoader)sysClassLoader).getURLs();
  
         for(int i=0; i< urls.length; i++)
@@ -108,12 +96,7 @@ public class Main {
 	public static void registerSchema(SchemaRegistryClient schemaRegistry) throws Exception {
 
 		try {
-			schemaRegistry.register("detectionEvent",detectionEvent.SCHEMA$);
-			//schemaRegistry.register("category",category.SCHEMA$); 
-			//schemaRegistry.register("coordinate",coordinate.SCHEMA$); 
-			//schemaRegistry.register("nationality",nationality.SCHEMA$); 		
-			//schemaRegistry.register("basicEntityAttributes",basicEntityAttributes.SCHEMA$); 
-			//schemaRegistry.register("generalEntityAttributes",generalEntityAttributes.SCHEMA$); 
+			schemaRegistry.register("detectionEvent",detectionEvent.SCHEMA$); 
 
 		} catch (IOException | RestClientException e) {
 
