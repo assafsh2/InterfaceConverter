@@ -109,11 +109,11 @@ public class Main {
 
 		try {
 			schemaRegistry.register("detectionEvent",detectionEvent.SCHEMA$);
-			schemaRegistry.register("category",category.SCHEMA$); 
-			schemaRegistry.register("coordinate",coordinate.SCHEMA$); 
-			schemaRegistry.register("nationality",nationality.SCHEMA$); 		
-			schemaRegistry.register("basicEntityAttributes",basicEntityAttributes.SCHEMA$); 
-			schemaRegistry.register("generalEntityAttributes",generalEntityAttributes.SCHEMA$); 
+			//schemaRegistry.register("category",category.SCHEMA$); 
+			//schemaRegistry.register("coordinate",coordinate.SCHEMA$); 
+			//schemaRegistry.register("nationality",nationality.SCHEMA$); 		
+			//schemaRegistry.register("basicEntityAttributes",basicEntityAttributes.SCHEMA$); 
+			//schemaRegistry.register("generalEntityAttributes",generalEntityAttributes.SCHEMA$); 
 
 		} catch (IOException | RestClientException e) {
 
