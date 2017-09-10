@@ -7,6 +7,8 @@ import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Arrays; 
 import java.util.concurrent.CompletionStage; 
 
@@ -43,6 +45,18 @@ public class Main {
 		System.out.println("SCHEMA_REGISTRY_ADDRESS::::::::" + System.getenv("SCHEMA_REGISTRY_ADDRESS"));
 		System.out.println("SCHEMA_REGISTRY_IDENTITY::::::::" + System.getenv("SCHEMA_REGISTRY_IDENTITY")); 
 		System.out.println("INTERFACE_NAME::::::::" + System.getenv("INTERFACE_NAME"));
+		
+		System.out.println("CLASSPATH");
+        //Get the System Classloader
+        ClassLoader sysClassLoader = ClassLoader.getSystemClassLoader();
+ 
+        //Get the URLs
+        URL[] urls = ((URLClassLoader)sysClassLoader).getURLs();
+ 
+        for(int i=0; i< urls.length; i++)
+        {
+            System.out.println(urls[i].getFile());
+        }  
 
 		final ActorSystem system = ActorSystem.create();
 		SchemaRegistryClient schemaRegistry;
@@ -56,7 +70,7 @@ public class Main {
 			interfaceName = System.getenv("INTERFACE_NAME");
 
 			schemaRegistry = new CachedSchemaRegistryClient(System.getenv("SCHEMA_REGISTRY_ADDRESS"), Integer.parseInt(System.getenv("SCHEMA_REGISTRY_IDENTITY")));			
-			registerSchema(schemaRegistry);
+		 	registerSchema(schemaRegistry);
 
 		}
 		Utils utils = new Utils(system,schemaRegistry); 
