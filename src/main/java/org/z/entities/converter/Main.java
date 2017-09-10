@@ -28,7 +28,7 @@ import akka.stream.javadsl.Source;
 
 public class Main {
 
-	public static boolean testing = false;
+	public static boolean testing = true;
 
 	public static void main(String[] args) throws Exception {
 

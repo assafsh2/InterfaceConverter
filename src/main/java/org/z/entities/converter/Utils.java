@@ -4,9 +4,17 @@ import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException; 
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
+import java.util.Properties;
 import java.util.concurrent.CompletionStage;
+
+import joptsimple.internal.Strings;
 
 import org.apache.avro.Schema; 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -66,33 +74,28 @@ public class Utils {
 	}
 
 
-	public AbstractConverter getConverterForInterface(String interfaceName) {
+	public <converterClass> AbstractConverter getConverterForInterface(String interfaceName) throws Exception     {
+		
+	
+        try (InputStream in = new FileInputStream("resources/converter_for_interface.properties")) {
 
-		AbstractConverter converter = null;
-
-		switch(interfaceName) {
-
-		case "source0":	
-		case "source1":	
-		case "source2":
-		case "source3":
-		case "source4":
-		case "source5":
-		case "source6":
-		case "source7":
-		case "source8":
-		case "source9":
-		case "source10":
-		case "source11":
-		case "source12":
-
-			converter = new Source1Converter(interfaceName);
-			break;
-		default: 
-
-		}
-
-		return converter; 
+            Properties prop = new Properties();
+            prop.load(in);  
+            String className = prop.getProperty(interfaceName);
+            System.out.println("The converter class is "+className);
+            if(Strings.isNullOrEmpty(className)) {
+            	return null;
+            }  
+            Class<?> cl = Class.forName(className);
+            Constructor<?> constructor = cl.getConstructor(String.class);
+            AbstractConverter converter = (AbstractConverter) constructor.newInstance(interfaceName);
+            
+            return converter; 
+        } catch (    IOException | ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+	 
+			e.printStackTrace();			
+			throw e;
+		} 
 	}
 
 	public Schema getSchema(String name) throws IOException, RestClientException {
