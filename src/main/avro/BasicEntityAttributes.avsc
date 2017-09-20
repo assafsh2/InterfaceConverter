@@ -1,7 +1,7 @@
 { 
   "type": "record",
   "namespace" : "org.z.entities.schema",
-  "name": "basicEntityAttributes",
+  "name": "BasicEntityAttributes",
   "doc": "This is a schema for basic entity attributes, this will represent basic entity in all life cycle",
   "fields": [
 	{
@@ -9,7 +9,7 @@
   	"type":
   	{
     	"type": "record",
-    	"name": "coordinate",
+    	"name": "Coordinate",
     	"doc": "Location attribute in grid format",
     	"fields": [
          	{

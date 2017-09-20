@@ -1,7 +1,7 @@
 {
   "type": "record",
   "namespace" : "org.z.entities.schema",
-  "name": "detectionEvent",
+  "name": "DetectionEvent",
   "doc": "This is a schema for entity detection report event",
   "fields": [
 	{

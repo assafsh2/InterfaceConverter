@@ -5,15 +5,13 @@ import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient; 
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.io.IOException; 
 import java.util.Arrays; 
 import java.util.concurrent.CompletionStage; 
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;  
 import org.apache.kafka.common.serialization.StringSerializer; 
-import org.z.entities.schema.detectionEvent;
+import org.z.entities.schema.DetectionEvent;
 import akka.Done;
 import akka.actor.ActorSystem; 
 import akka.kafka.ProducerSettings;
@@ -49,7 +47,7 @@ public class Main {
 			interfaceName = System.getenv("INTERFACE_NAME");
 
 			schemaRegistry = new CachedSchemaRegistryClient(System.getenv("SCHEMA_REGISTRY_ADDRESS"), Integer.parseInt(System.getenv("SCHEMA_REGISTRY_IDENTITY")));			
-		 	registerSchema(schemaRegistry);
+		 	//registerSchema(schemaRegistry);
 
 		}
 		Utils utils = new Utils(system,schemaRegistry); 
@@ -87,7 +85,7 @@ public class Main {
 	public static void registerSchema(SchemaRegistryClient schemaRegistry) throws Exception {
 
 		try {
-			schemaRegistry.register("detectionEvent",detectionEvent.SCHEMA$); 
+			schemaRegistry.register("DetectionEvent",DetectionEvent.SCHEMA$); 
 
 		} catch (IOException | RestClientException e) {
 

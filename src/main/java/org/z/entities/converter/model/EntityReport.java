@@ -206,8 +206,4 @@ public class EntityReport {
 				+ picture_url + ", height=" + height + ", nickname=" + nickname
 				+ ", timestamp=" + timestamp + "]";
 	} 
-	
-	
-	
- 
 }

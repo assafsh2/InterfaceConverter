@@ -9,11 +9,11 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.z.entities.converter.AbstractConverter;
 import org.z.entities.converter.model.EntityReport;
-import org.z.entities.schema.basicEntityAttributes;
-import org.z.entities.schema.category;
-import org.z.entities.schema.coordinate;
-import org.z.entities.schema.generalEntityAttributes;
-import org.z.entities.schema.nationality;
+import org.z.entities.schema.BasicEntityAttributes;
+import org.z.entities.schema.Category;
+import org.z.entities.schema.Coordinate;
+import org.z.entities.schema.GeneralEntityAttributes;
+import org.z.entities.schema.Nationality;
  
 public class Source1Converter extends AbstractConverter {
 
@@ -37,7 +37,6 @@ public class Source1Converter extends AbstractConverter {
 
 			e.printStackTrace();
 		}
-
 		return null;
 	}
 
@@ -45,23 +44,23 @@ public class Source1Converter extends AbstractConverter {
 
 		EntityReport entityReport = utils.getEntityReportFromJson(data);
 
-		coordinate location = coordinate.newBuilder().setLat(entityReport.getLat())
+		Coordinate coordinate = Coordinate.newBuilder().setLat(entityReport.getLat())
 				.setLong$(entityReport.getXlong())
 				.build();
 
-		basicEntityAttributes basicEntity = basicEntityAttributes.newBuilder().setCoordinate(location)
+		BasicEntityAttributes basicEntity = BasicEntityAttributes.newBuilder().setCoordinate(coordinate)
 				.setEntityOffset(0)
 				.setIsNotTracked(false)
 				.setSourceName(entityReport.getSource_name())
 				.build();
 
-		generalEntityAttributes entity = generalEntityAttributes.newBuilder()
-				.setCategory(category.valueOf(entityReport.getCategory()))
+		GeneralEntityAttributes entity = GeneralEntityAttributes.newBuilder()
+				.setCategory(Category.valueOf(entityReport.getCategory()))
 				.setCourse(entityReport.getCourse())
 				.setElevation(entityReport.getElevation())
 				.setExternalSystemID(entityReport.getId())
 				.setHeight(entityReport.getHeight())
-				.setNationality(nationality.valueOf(entityReport.getNationality().toUpperCase()))
+				.setNationality(Nationality.valueOf(entityReport.getNationality().toUpperCase()))
 				.setNickname(entityReport.getNickname())
 				.setPictureURL(entityReport.getPicture_url())
 				.setSpeed(entityReport.getSpeed())
