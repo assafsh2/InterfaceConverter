@@ -3,15 +3,16 @@ package org.z.entities.converter;
 
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient;
-import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient; 
-import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
-import java.io.IOException; 
+import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;  
+ 
 import java.util.Arrays; 
 import java.util.concurrent.CompletionStage; 
+
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;  
 import org.apache.kafka.common.serialization.StringSerializer; 
-import org.z.entities.schema.DetectionEvent;
+import org.apache.log4j.Logger;  
+
 import akka.Done;
 import akka.actor.ActorSystem; 
 import akka.kafka.ProducerSettings;
@@ -27,13 +28,17 @@ import akka.stream.javadsl.Source;
 public class Main {
 
 	public static boolean testing = false;
+	final static public Logger logger = Logger.getLogger(Main.class);
+	static {
+		Utils.setDebugLevel(logger);
+	}
 
 	public static void main(String[] args) throws Exception {
 
-		System.out.println("KAFKA_ADDRESS::::::::" + System.getenv("KAFKA_ADDRESS"));
-		System.out.println("SCHEMA_REGISTRY_ADDRESS::::::::" + System.getenv("SCHEMA_REGISTRY_ADDRESS"));
-		System.out.println("SCHEMA_REGISTRY_IDENTITY::::::::" + System.getenv("SCHEMA_REGISTRY_IDENTITY")); 
-		System.out.println("INTERFACE_NAME::::::::" + System.getenv("INTERFACE_NAME"));
+		logger.debug("KAFKA_ADDRESS::::::::" + System.getenv("KAFKA_ADDRESS"));
+		logger.debug("SCHEMA_REGISTRY_ADDRESS::::::::" + System.getenv("SCHEMA_REGISTRY_ADDRESS"));
+		logger.debug("SCHEMA_REGISTRY_IDENTITY::::::::" + System.getenv("SCHEMA_REGISTRY_IDENTITY")); 
+		logger.debug("INTERFACE_NAME::::::::" + System.getenv("INTERFACE_NAME"));
 		
 		final ActorSystem system = ActorSystem.create();
 		SchemaRegistryClient schemaRegistry;
@@ -45,16 +50,14 @@ public class Main {
 		}
 		else {
 			interfaceName = System.getenv("INTERFACE_NAME");
-
-			schemaRegistry = new CachedSchemaRegistryClient(System.getenv("SCHEMA_REGISTRY_ADDRESS"), Integer.parseInt(System.getenv("SCHEMA_REGISTRY_IDENTITY")));			
-		 	//registerSchema(schemaRegistry);
-
+			schemaRegistry = new CachedSchemaRegistryClient(System.getenv("SCHEMA_REGISTRY_ADDRESS"), Integer.parseInt(System.getenv("SCHEMA_REGISTRY_IDENTITY")));		
 		}
+		
 		Utils utils = new Utils(system,schemaRegistry); 
 		AbstractConverter converter = utils.getConverterForInterface(interfaceName);
 		if(converter == null) {
 
-			System.out.print("Converter doesn't exist for "+interfaceName);
+			logger.error("Converter doesn't exist for "+interfaceName);
 			System.exit(-1);
 		}
 
@@ -75,24 +78,12 @@ public class Main {
 			writeSomeData(system,materializer);
 		}
 
-		System.out.println("Ready");
+		logger.debug("Ready");
 		while(true) {
 			Thread.sleep(3000);
 		} 
 
-	}  
-
-	public static void registerSchema(SchemaRegistryClient schemaRegistry) throws Exception {
-
-		try {
-			schemaRegistry.register("DetectionEvent",DetectionEvent.SCHEMA$); 
-
-		} catch (IOException | RestClientException e) {
-
-			e.printStackTrace();
-			throw e;
-		} 
-	}
+	} 
 
 	public static void writeSomeData(ActorSystem system, ActorMaterializer materializer ) { 
 

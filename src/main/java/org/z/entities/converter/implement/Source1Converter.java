@@ -7,7 +7,10 @@ import java.io.IOException;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.log4j.Logger;
 import org.z.entities.converter.AbstractConverter;
+import org.z.entities.converter.Main;
+import org.z.entities.converter.Utils;
 import org.z.entities.converter.model.EntityReport;
 import org.z.entities.schema.BasicEntityAttributes;
 import org.z.entities.schema.Category;
@@ -16,21 +19,24 @@ import org.z.entities.schema.GeneralEntityAttributes;
 import org.z.entities.schema.Nationality;
  
 public class Source1Converter extends AbstractConverter {
+	
+	final static public Logger logger = Logger.getLogger(Source1Converter.class);
+	static {
+		Utils.setDebugLevel(logger);
+	}
 
 	public Source1Converter(String interfaceName) {
 		super(interfaceName);
-
 	}
 
 	@Override
-	public ProducerRecord<Object, Object> apply(ConsumerRecord<String,String> record) { 
-
-		System.out.println("Source1Converter "+ interfaceName+" got "+record.toString());
+	public ProducerRecord<Object, Object> apply(ConsumerRecord<String,String> record) {
+		logger.debug("Source1Converter "+ interfaceName+" got "+record.toString());
 
 		ProducerRecord<Object, Object> convertedData;
 		try {  
 			convertedData = new ProducerRecord<>(interfaceName ,getGenericRecordFromJson((String)record.value()));
-			System.out.println("Source1Converter send "+convertedData.toString());
+			logger.debug("Source1Converter send "+convertedData.toString());
 
 			return convertedData;
 		} catch (IOException | RestClientException e) {

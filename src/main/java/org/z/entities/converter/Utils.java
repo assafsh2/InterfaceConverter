@@ -19,6 +19,8 @@ import org.apache.avro.Schema;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -35,6 +37,10 @@ public class Utils {
 
 	private ActorSystem system;
 	private SchemaRegistryClient schemaRegistry;
+	final static public Logger logger = Logger.getLogger(Utils.class);
+	static {
+		setDebugLevel(logger);
+	}
 
 	public Utils(ActorSystem system, SchemaRegistryClient schemaRegistry) {
 
@@ -49,11 +55,9 @@ public class Utils {
 		ProducerSettings<Object, Object> producerSettings = createProducerSettings(system); 
 		
 		return Producer.plainSink(producerSettings);
-
 	}
 
 	public ConsumerSettings<String, String> createConsumerSettings(ActorSystem system) {
-
 
 		return ConsumerSettings.create(system, new StringDeserializer(), new StringDeserializer()) 
 				.withBootstrapServers(getKafkaURL())
@@ -71,7 +75,6 @@ public class Utils {
 				.withBootstrapServers(getKafkaURL());
 	}
 
-
 	public <converterClass> AbstractConverter getConverterForInterface(String interfaceName) throws Exception     {
 		
 		/*
@@ -86,7 +89,7 @@ public class Utils {
             Properties prop = new Properties();
             prop.load(in);  
             String className = prop.getProperty(interfaceName);
-            System.out.println("The converter class is "+className);
+            logger.debug("The converter class is "+className);
             if(Strings.isNullOrEmpty(className)) {
             	return null;
             }  
@@ -124,5 +127,42 @@ public class Utils {
 		}
 		return kafkaUrl;
 	}
+	
+	/**
+	 * The option are - 
+	 * Trace < Debug < Info < Warn < Error < Fatal. 
+	 * Trace is of the lowest priority and Fatal is having highest priority.  
+	 * When we define logger level, anything having higher priority logs are also getting printed
+	 * 
+	 * @param debugLevel
+	 */
+	public static void setDebugLevel(Logger logger) {
+
+		String debugLevel = System.getenv("DEBUG_LEVEL");		
+		if( Strings.isNullOrEmpty(debugLevel)) {
+			debugLevel = "ALL";
+		} 
+
+		switch (debugLevel) {
+
+		case "ALL":
+			logger.setLevel(Level.ALL);
+			break;
+		case "DEBUG":
+			logger.setLevel(Level.DEBUG);
+			break;
+		case "INFO":
+			logger.setLevel(Level.INFO);
+			break;
+		case "ERROR":
+			logger.setLevel(Level.ERROR);
+			break;
+		case "WARNING":
+			logger.setLevel(Level.WARN); 
+			break;
+		default:
+			logger.setLevel(Level.ALL);
+		} 
+	} 
 
 }
