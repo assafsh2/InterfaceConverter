@@ -16,7 +16,7 @@ import org.z.entities.converter.Utils;
 import org.z.entities.converter.model.EntityReport;
 import org.z.entities.schema.BasicEntityAttributes;
 import org.z.entities.schema.Category;
-import org.z.entities.schema.Coordinate;
+import org.z.entities.schema.Coordinate; 
 import org.z.entities.schema.GeneralEntityAttributes;
 import org.z.entities.schema.Nationality;
  
@@ -53,7 +53,7 @@ public class Source1Converter extends AbstractConverter {
 		EntityReport entityReport = utils.getEntityReportFromJson(data);
 		String metadata = entityReport.getMetadata();
 		if(Strings.isNullOrEmpty(metadata)) {
-			metadata = GeneralEntityAttributes.newBuilder().getMetadata();
+			metadata = (String) GeneralEntityAttributes.SCHEMA$.getField("metadata").defaultVal();
 		}
 
 		Coordinate coordinate = Coordinate.newBuilder().setLat(entityReport.getLat())
