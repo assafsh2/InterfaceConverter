@@ -4,6 +4,8 @@ import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientExcept
 
 import java.io.IOException;
 
+import joptsimple.internal.Strings;
+
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -49,6 +51,10 @@ public class Source1Converter extends AbstractConverter {
 	private GenericRecord getGenericRecordFromJson(String data) throws IOException, RestClientException {
 
 		EntityReport entityReport = utils.getEntityReportFromJson(data);
+		String metadata = entityReport.getMetadata();
+		if(Strings.isNullOrEmpty(metadata)) {
+			metadata = GeneralEntityAttributes.newBuilder().getMetadata();
+		}
 
 		Coordinate coordinate = Coordinate.newBuilder().setLat(entityReport.getLat())
 				.setLong$(entityReport.getXlong())
