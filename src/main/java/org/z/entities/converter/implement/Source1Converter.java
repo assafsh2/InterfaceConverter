@@ -11,7 +11,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
 import org.z.entities.converter.AbstractConverter;
-import org.z.entities.converter.Main;
 import org.z.entities.converter.Utils;
 import org.z.entities.converter.model.EntityReport;
 import org.z.entities.schema.BasicEntityAttributes;
@@ -77,7 +76,7 @@ public class Source1Converter extends AbstractConverter {
 				.setPictureURL(entityReport.getPicture_url())
 				.setSpeed(entityReport.getSpeed())
 				.setBasicAttributes(basicEntity)
-				.setMetadata(entityReport.getMetadata())
+				.setMetadata(metadata)
 				.build();
 
 		return entity;
