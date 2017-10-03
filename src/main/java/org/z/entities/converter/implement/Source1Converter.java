@@ -71,6 +71,7 @@ public class Source1Converter extends AbstractConverter {
 				.setPictureURL(entityReport.getPicture_url())
 				.setSpeed(entityReport.getSpeed())
 				.setBasicAttributes(basicEntity)
+				.setMetadata(entityReport.getMetadata())
 				.build();
 
 		return entity;

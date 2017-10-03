@@ -15,6 +15,7 @@ public class EntityReport {
 	private Double height;
 	private String nickname;
 	private Double timestamp;
+	private String metadata;
 	
 	public String getId() {
 		return id;
@@ -55,6 +56,9 @@ public class EntityReport {
 	public Double getTimestamp() {
 		return timestamp;
 	}
+	public String getMetadata() {
+		return metadata;
+	}
 	public void setId(String id) {
 		this.id = id;
 	}
@@ -94,6 +98,10 @@ public class EntityReport {
 	public void setTimestamp(Double timestamp) {
 		this.timestamp = timestamp;
 	}
+	public void setMetadata(String metadata) {
+		this.metadata = metadata;
+	}	
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;

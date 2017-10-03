@@ -4,6 +4,11 @@
   "name": "GeneralEntityAttributes",
   "doc": "This is a schema for general entity before acquiring by the system",
   "fields": [
+    {
+     "name": "metadata", 
+     "type":"string", 
+     "default":""
+     },
 	{
   	"name": "basicAttributes",
   	"type": "BasicEntityAttributes"
