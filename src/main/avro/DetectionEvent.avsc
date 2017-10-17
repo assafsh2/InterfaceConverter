@@ -5,7 +5,8 @@
   "doc": "This is a schema for entity detection report event",
   "fields": [
   	{"name": "metadata", 
-  	 "type":"string", 
+  	 "type":"string",
+  	 "doc" : "metadata",
   	 "default":""
   	 },
 	{
