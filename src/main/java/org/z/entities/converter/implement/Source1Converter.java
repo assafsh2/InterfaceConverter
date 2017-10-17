@@ -5,8 +5,7 @@ import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientExcept
 import java.io.IOException;
 
 import joptsimple.internal.Strings;
-
-import org.apache.avro.generic.GenericRecord;
+ 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
@@ -34,9 +33,8 @@ public class Source1Converter extends AbstractConverter {
 	public ProducerRecord<Object, Object> apply(ConsumerRecord<String,String> record) {
 		logger.debug("Source1Converter "+ interfaceName+" got "+record.toString());
 
-		ProducerRecord<Object, Object> convertedData;
 		try {  
-			convertedData = new ProducerRecord<>(interfaceName ,getGenericRecordFromJson((String)record.value()));
+			ProducerRecord<Object, Object> convertedData = getGenericRecordFromJson((String)record.value());
 			logger.debug("Source1Converter send "+convertedData.toString());
 
 			return convertedData;
@@ -47,7 +45,7 @@ public class Source1Converter extends AbstractConverter {
 		return null;
 	}
 
-	private GenericRecord getGenericRecordFromJson(String data) throws IOException, RestClientException {
+	private ProducerRecord<Object, Object> getGenericRecordFromJson(String data) throws IOException, RestClientException {
 
 		EntityReport entityReport = utils.getEntityReportFromJson(data);
 		String metadata = entityReport.getMetadata();
@@ -78,7 +76,7 @@ public class Source1Converter extends AbstractConverter {
 				.setBasicAttributes(basicEntity)
 				.setMetadata(metadata)
 				.build();
-
-		return entity;
+		
+		return new ProducerRecord<>(interfaceName ,entityReport.getId(), entity);
 	}
 }
