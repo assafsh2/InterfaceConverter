@@ -28,10 +28,6 @@
   	"type": "boolean"
 	},
 	{
-  	"name": "entityOffset",
-  	"type": "long"
-	},
-	{
   	"name": "sourceName",
   	"type": "string"
 	}

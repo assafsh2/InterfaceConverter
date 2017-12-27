@@ -1,16 +1,17 @@
 package org.z.entities.converter.implement;
 
-import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
-
+import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException; 
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import joptsimple.internal.Strings;
- 
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.producer.ProducerRecord;
+
+import org.apache.kafka.clients.consumer.ConsumerRecord; 
+import org.apache.kafka.clients.producer.ProducerRecord; 
 import org.apache.log4j.Logger;
 import org.z.entities.converter.AbstractConverter;
-import org.z.entities.converter.Utils;
+import org.z.entities.converter.ConverterUtils;
 import org.z.entities.converter.model.EntityReport;
 import org.z.entities.schema.BasicEntityAttributes;
 import org.z.entities.schema.Category;
@@ -20,13 +21,14 @@ import org.z.entities.schema.Nationality;
  
 public class Source1Converter extends AbstractConverter {
 	
+
 	final static public Logger logger = Logger.getLogger(Source1Converter.class);
 	static {
-		Utils.setDebugLevel(logger);
+		ConverterUtils.setDebugLevel(logger); 
 	}
 
-	public Source1Converter(String interfaceName) {
-		super(interfaceName);
+	public Source1Converter(String interfaceName, ConcurrentHashMap<Integer, AtomicLong> map) {
+		super(interfaceName,map);
 	}
 
 	@Override
@@ -56,9 +58,11 @@ public class Source1Converter extends AbstractConverter {
 		Coordinate coordinate = Coordinate.newBuilder().setLat(entityReport.getLat())
 				.setLong$(entityReport.getXlong())
 				.build();
+		
+		int partition = utils.getPartition(map.keySet().size(), entityReport.getId());
+		AtomicLong lastOffset = map.get(partition);
 
-		BasicEntityAttributes basicEntity = BasicEntityAttributes.newBuilder().setCoordinate(coordinate)
-				.setEntityOffset(0)
+		BasicEntityAttributes basicEntity = BasicEntityAttributes.newBuilder().setCoordinate(coordinate) 
 				.setIsNotTracked(false)
 				.setSourceName(entityReport.getSource_name())
 				.build();
@@ -75,6 +79,7 @@ public class Source1Converter extends AbstractConverter {
 				.setSpeed(entityReport.getSpeed())
 				.setBasicAttributes(basicEntity)
 				.setMetadata(metadata)
+				.setLastStateOffset(lastOffset.getAndIncrement())
 				.build();
 		
 		return new ProducerRecord<>(interfaceName ,entityReport.getId(), entity);

@@ -4,7 +4,7 @@ package org.z.entities.converter;
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;  
- 
+
 import java.util.Arrays; 
 import java.util.concurrent.CompletionStage; 
 
@@ -30,7 +30,7 @@ public class Main {
 	public static boolean testing = false;
 	final static public Logger logger = Logger.getLogger(Main.class);
 	static {
-		Utils.setDebugLevel(logger);
+		ConverterUtils.setDebugLevel(logger);
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -53,7 +53,7 @@ public class Main {
 			schemaRegistry = new CachedSchemaRegistryClient(System.getenv("SCHEMA_REGISTRY_ADDRESS"), Integer.parseInt(System.getenv("SCHEMA_REGISTRY_IDENTITY")));		
 		}
 		
-		Utils utils = new Utils(system,schemaRegistry); 
+		ConverterUtils utils = new ConverterUtils(system,schemaRegistry); 
 		AbstractConverter converter = utils.getConverterForInterface(interfaceName);
 		if(converter == null) {
 
@@ -73,9 +73,10 @@ public class Main {
 				system.terminate();	 
 			}
 		});
+		
 
 		if(testing) { 
-			writeSomeData(system,materializer);
+		//	writeSomeData(system,materializer);
 		}
 
 		logger.debug("Ready");
@@ -97,7 +98,7 @@ public class Main {
 		 */
 		ProducerSettings<String, String> producerSettings = ProducerSettings
 				.create(system, new StringSerializer(),  new StringSerializer())
-				.withBootstrapServers("192.168.0.51:9092");
+				.withBootstrapServers(System.getenv("KAFKA_ADDRESS"));
 
 		Sink<ProducerRecord<String, String>, CompletionStage<Done>> sink = Producer.plainSink(producerSettings);
 
@@ -125,6 +126,9 @@ public class Main {
 				+" \"timestamp\":\""+timestamp+"\"  }"; 
 
 		ProducerRecord<String, String> producerRecord  = new ProducerRecord<String, String>("source0-raw-data", json);
+		
+		
+	 
 
 		Source.from(Arrays.asList(producerRecord))
 		.to(sink)
