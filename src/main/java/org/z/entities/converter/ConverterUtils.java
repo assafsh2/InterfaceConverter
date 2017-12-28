@@ -3,12 +3,10 @@ package org.z.entities.converter;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+ 
+import java.io.IOException; 
+import java.lang.reflect.Constructor; 
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Properties;
@@ -92,26 +90,22 @@ public class ConverterUtils {
 		 * 2. Add the interface name and the full class name to converter_for_interface.properties 
 		 * */		
 
-		String directory =    "src/main/resources";
-		try (InputStream in = new FileInputStream(directory+"/converter_for_interface.properties")) {
+		//String directory =    "src/main/resources";
+		URL url = ClassLoader.getSystemResource("converter_for_interface.properties"); 
 
-			Properties prop = new Properties();
-			prop.load(in);  
-			String className = prop.getProperty(interfaceName);
-			logger.debug("The converter class is "+className);
-			if(Strings.isNullOrEmpty(className)) {
-				return null;
-			}  
-			Class<?> cl = Class.forName(className);
-			Constructor<?> constructor = cl.getConstructor(String.class,ConcurrentHashMap.class);
-			AbstractConverter converter = (AbstractConverter) constructor.newInstance(interfaceName,getPartitionsMap());
+		Properties prop = new Properties();
+		prop.load(url.openStream());  
+		String className = prop.getProperty(interfaceName);
+		logger.debug("The converter class is "+className);
+		if(Strings.isNullOrEmpty(className)) {
+			return null;
+		}  
+		Class<?> cl = Class.forName(className);
+		Constructor<?> constructor = cl.getConstructor(String.class,ConcurrentHashMap.class);
+		AbstractConverter converter = (AbstractConverter) constructor.newInstance(interfaceName,getPartitionsMap());
 
-			return converter; 
-		} catch (    IOException | ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+		return converter; 
 
-			e.printStackTrace();			
-			throw e;
-		} 
 	}
 
 	public Schema getSchema(String name) throws IOException, RestClientException {
@@ -162,7 +156,7 @@ public class ConverterUtils {
 			logger.setLevel(Level.ALL);
 		} 
 	} 
-	
+
 	public int getPartition (int numPartitions,String key) {  		 
 		try(StringSerializer stringSerializer = new StringSerializer()) {
 			byte[] keyBytes	 = stringSerializer.serialize(topic, key); 
@@ -172,7 +166,7 @@ public class ConverterUtils {
 
 	public ConcurrentHashMap<Integer, AtomicLong> getPartitionsMap() {		
 		ConcurrentHashMap<Integer, AtomicLong> map = new ConcurrentHashMap<Integer, AtomicLong>();
- 
+
 		Properties props = getKafkaConsumerProperties(); 
 		try(KafkaConsumer<Object, Object> consumer = new KafkaConsumer<Object, Object>(props)) {
 			int numPartitions = consumer.partitionsFor(topic).size();		
