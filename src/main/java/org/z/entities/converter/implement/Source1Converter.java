@@ -66,7 +66,7 @@ public class Source1Converter extends AbstractConverter {
 				.setIsNotTracked(false)
 				.setSourceName(entityReport.getSource_name())
 				.build();
-
+		System.out.println("ExternalSystemID "+entityReport.getId()+" partition "+partition+ " offset "+lastOffset);
 		GeneralEntityAttributes entity = GeneralEntityAttributes.newBuilder()
 				.setCategory(Category.valueOf(entityReport.getCategory()))
 				.setCourse(entityReport.getCourse())
