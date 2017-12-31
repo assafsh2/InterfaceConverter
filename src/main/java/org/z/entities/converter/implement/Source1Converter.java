@@ -59,13 +59,15 @@ public class Source1Converter extends AbstractConverter {
 				.setLong$(entityReport.getXlong())
 				.build();
 		
-		int partition = utils.getPartition(map.keySet().size(), entityReport.getId());
+		int partition = utils.getPartitionByKey(interfaceName,entityReport.getId(), map.keySet().size());
 		AtomicLong lastOffset = map.get(partition);
 
 		BasicEntityAttributes basicEntity = BasicEntityAttributes.newBuilder().setCoordinate(coordinate) 
 				.setIsNotTracked(false)
 				.setSourceName(entityReport.getSource_name())
 				.build();
+		
+		System.out.println("ExternalSystemID "+entityReport.getId()+" partition "+partition+ " offset "+lastOffset);
 
 		GeneralEntityAttributes entity = GeneralEntityAttributes.newBuilder()
 				.setCategory(Category.valueOf(entityReport.getCategory()))
@@ -79,8 +81,13 @@ public class Source1Converter extends AbstractConverter {
 				.setSpeed(entityReport.getSpeed())
 				.setBasicAttributes(basicEntity)
 				.setMetadata(metadata)
-				.setLastStateOffset(lastOffset.getAndIncrement())
+				.setLastStateOffset(lastOffset.get())
 				.build();
+		
+		lastOffset.incrementAndGet();
+		
+		
+		
 		
 		return new ProducerRecord<>(interfaceName ,entityReport.getId(), entity);
 	}

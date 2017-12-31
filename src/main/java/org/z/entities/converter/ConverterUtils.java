@@ -1,14 +1,17 @@
 package org.z.entities.converter;
 
+import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
+import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
- 
+
 import java.io.IOException; 
 import java.lang.reflect.Constructor; 
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,6 +22,7 @@ import joptsimple.internal.Strings;
 import org.apache.avro.Schema;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;  
+import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
@@ -56,6 +60,12 @@ public class ConverterUtils {
 	}
 
 	public ConverterUtils() {
+		if(Main.testing) {
+			schemaRegistry = new MockSchemaRegistryClient(); 
+		}
+		else { 
+			schemaRegistry = new CachedSchemaRegistryClient(System.getenv("SCHEMA_REGISTRY_ADDRESS"), Integer.parseInt(System.getenv("SCHEMA_REGISTRY_IDENTITY")));		
+		}
 	}
 
 	public Sink<ProducerRecord<Object, Object>, CompletionStage<Done>> getSink() {
@@ -157,9 +167,14 @@ public class ConverterUtils {
 		} 
 	} 
 
-	public int getPartition (int numPartitions,String key) {  		 
-		try(StringSerializer stringSerializer = new StringSerializer()) {
-			byte[] keyBytes	 = stringSerializer.serialize(topic, key); 
+	public int getPartitionByKey (String topic,String key,int numPartitions) { 	
+		try(KafkaAvroSerializer keySerializer = new KafkaAvroSerializer(schemaRegistry)) {
+			Map<String,String> map = new ConcurrentHashMap<String, String>();		
+			map.put("schema.registry.url", "http://fake-url");
+			map.put("max.schemas.per.subject", String.valueOf(Integer.MAX_VALUE));		
+			keySerializer.configure(map, true);
+			
+			byte[] keyBytes	 = keySerializer.serialize(topic, key); 
 			return Utils.toPositive(Utils.murmur2(keyBytes)) % numPartitions;					
 		}	
 	} 
@@ -209,6 +224,5 @@ public class ConverterUtils {
 		props.put("group.id", "group1");
 
 		return props;
-	}
-
+	} 
 }
