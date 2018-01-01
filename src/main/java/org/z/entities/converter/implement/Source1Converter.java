@@ -1,8 +1,10 @@
 package org.z.entities.converter.implement;
 
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException; 
+import io.confluent.kafka.serializers.KafkaAvroSerializer;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -29,12 +31,16 @@ import org.z.entities.schema.Coordinate;
 import org.z.entities.schema.DetectionEvent;
 import org.z.entities.schema.GeneralEntityAttributes;
 import org.z.entities.schema.Nationality;
- 
+
+import akka.actor.ActorSystem;
+import akka.kafka.ProducerSettings;
+
 public class Source1Converter extends AbstractConverter {
-	
+
 	private ConcurrentHashSet<String> set;
 	private KafkaProducer<Object, Object> producer;
-	final static public Logger logger = Logger.getLogger(Source1Converter.class);
+	private Object obj= new Object();
+	final static public Logger logger = Logger.getLogger(Source1Converter.class);	
 	static {
 		ConverterUtils.setDebugLevel(logger); 
 	}
@@ -43,7 +49,7 @@ public class Source1Converter extends AbstractConverter {
 		super(interfaceName,map);
 		set = new ConcurrentHashSet<String>();
 		producer = new KafkaProducer<>(getProperties(true));
-		
+
 	}
 
 	@Override
@@ -72,22 +78,25 @@ public class Source1Converter extends AbstractConverter {
 		Coordinate coordinate = Coordinate.newBuilder().setLat(entityReport.getLat())
 				.setLong$(entityReport.getXlong())
 				.build();
-		
+
 		int partition = utils.getPartitionByKey(interfaceName,entityReport.getId(), map.keySet().size());
 		AtomicLong lastOffset = map.get(partition);
-		
+
 		String externalSystemId = entityReport.getId();
-		if(!set.contains(externalSystemId)) {	
-			System.out.println("New externalSystemId "+externalSystemId);
-			publishToCreationTopic(externalSystemId, metadata, lastOffset.get(), partition);
-			set.add(externalSystemId);			
+
+		synchronized (obj) {
+			if(!set.contains(externalSystemId)) {	
+				System.out.println("New externalSystemId "+externalSystemId);
+				publishToCreationTopic(externalSystemId, metadata, lastOffset.get(), partition);
+				set.add(externalSystemId);			
+			}
 		}
 
 		BasicEntityAttributes basicEntity = BasicEntityAttributes.newBuilder().setCoordinate(coordinate) 
 				.setIsNotTracked(false)
 				.setSourceName(entityReport.getSource_name())
 				.build();
- 
+
 		System.out.println("ExternalSystemID "+entityReport.getId()+" partition "+partition+ " offset "+lastOffset); 
 		GeneralEntityAttributes entity = GeneralEntityAttributes.newBuilder()
 				.setCategory(Category.valueOf(entityReport.getCategory()))
@@ -103,36 +112,38 @@ public class Source1Converter extends AbstractConverter {
 				.setMetadata(metadata)
 				.setLastStateOffset(lastOffset.get())
 				.build();
-		
+
 		lastOffset.incrementAndGet(); 
 		return new ProducerRecord<>(interfaceName ,entityReport.getId(), entity);
 	}
-	
+
 	private void publishToCreationTopic(String externalSystemId, String metadata, long lastOffset, int partition) {
-        try {
+		try {
 			ProducerRecord<Object, Object> record = new ProducerRecord<>("create",externalSystemId,getGenericRecordForCreation(externalSystemId, metadata,lastOffset,partition));
-			producer.send(record); 
+			utils.getKafkaProducer().send(record); 
 			System.out.println("Sent to create "+record);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (RestClientException e) {
-            e.printStackTrace();
-        }
-    }
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (RestClientException e) {
+			e.printStackTrace();
+		}
+	}
 
 	protected GenericRecord getGenericRecordForCreation(String externalSystemID, String metadata,long lastOffset,int partition)
-            throws IOException, RestClientException { 
+			throws IOException, RestClientException { 
 		DetectionEvent detectionEvent = DetectionEvent.newBuilder()
-		        .setSourceName(interfaceName)
-		        .setExternalSystemID(externalSystemID)
-		        .setDataOffset(lastOffset)
-                .setMetadata(metadata)
-                .setPartition(partition)
-		        .build();
+				.setSourceName(interfaceName)
+				.setExternalSystemID(externalSystemID)
+				.setDataOffset(lastOffset)
+				.setMetadata(metadata)
+				.setPartition(partition)
+				.build();
 
 		return detectionEvent;
-	}
+	} 
 	
+	
+
 	public Properties getProperties(boolean isAvro) {
 
 		String kafkaAddress;

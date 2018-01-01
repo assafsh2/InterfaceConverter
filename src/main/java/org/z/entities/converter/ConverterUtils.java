@@ -73,6 +73,17 @@ public class ConverterUtils {
 
 		return Producer.plainSink(producerSettings);
 	}
+	
+	public KafkaProducer<Object, Object>  getKafkaProducer() {
+		
+		KafkaAvroSerializer keySerializer = new KafkaAvroSerializer(schemaRegistry);
+		keySerializer.configure(Collections.singletonMap("schema.registry.url", "http://fake-url"), true);
+		ProducerSettings<Object, Object> producerSetting =  ProducerSettings
+				.create(system, keySerializer, new KafkaAvroSerializer(schemaRegistry))
+				.withBootstrapServers(System.getenv("KAFKA_ADDRESS"));
+	 
+		return producerSetting.createKafkaProducer();	
+	} 
 
 	public ConsumerSettings<String, String> createConsumerSettings(ActorSystem system) {
 
@@ -92,6 +103,9 @@ public class ConverterUtils {
 				.withBootstrapServers(System.getenv("KAFKA_ADDRESS"));
 	}
 
+	
+	
+	
 	public <converterClass> AbstractConverter getConverterForInterface(String interfaceName) throws Exception     {
 
 		/*
