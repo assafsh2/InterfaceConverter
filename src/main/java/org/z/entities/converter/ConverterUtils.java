@@ -47,19 +47,20 @@ public class ConverterUtils {
 
 	private ActorSystem system;
 	private SchemaRegistryClient schemaRegistry;
-	private String topic;
+	private String topic; 
 	final static public Logger logger = Logger.getLogger(ConverterUtils.class);
 	static {
 		setDebugLevel(logger);
 	}
 
-	public ConverterUtils(ActorSystem system, SchemaRegistryClient schemaRegistry) {
-		this.system = system;
+	public ConverterUtils(SchemaRegistryClient schemaRegistry) {
+		system = ActorSystem.create(); 
 		this.schemaRegistry = schemaRegistry; 
 		this.topic = System.getenv("INTERFACE_NAME");
 	}
 
 	public ConverterUtils() {
+		system = ActorSystem.create(); 
 		if(Main.testing) {
 			schemaRegistry = new MockSchemaRegistryClient(); 
 		}
@@ -77,14 +78,18 @@ public class ConverterUtils {
 	public KafkaProducer<Object, Object>  getKafkaProducer() {
 		
 		KafkaAvroSerializer keySerializer = new KafkaAvroSerializer(schemaRegistry);
-		keySerializer.configure(Collections.singletonMap("schema.registry.url", "http://fake-url"), true);
+		Map<String,String> map = new ConcurrentHashMap<String, String>();		
+		map.put("schema.registry.url", "http://fake-url");
+		map.put("max.schemas.per.subject", String.valueOf(Integer.MAX_VALUE));		
+		keySerializer.configure(map, true);
+		
 		ProducerSettings<Object, Object> producerSetting =  ProducerSettings
 				.create(system, keySerializer, new KafkaAvroSerializer(schemaRegistry))
 				.withBootstrapServers(System.getenv("KAFKA_ADDRESS"));
 	 
 		return producerSetting.createKafkaProducer();	
 	} 
-
+ 
 	public ConsumerSettings<String, String> createConsumerSettings(ActorSystem system) {
 
 		return ConsumerSettings.create(system, new StringDeserializer(), new StringDeserializer()) 

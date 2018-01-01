@@ -1,5 +1,4 @@
-package org.z.entities.converter;
-
+package org.z.entities.converter; 
 
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient;
@@ -53,7 +52,7 @@ public class Main {
 			schemaRegistry = new CachedSchemaRegistryClient(System.getenv("SCHEMA_REGISTRY_ADDRESS"), Integer.parseInt(System.getenv("SCHEMA_REGISTRY_IDENTITY")));		
 		}
 		
-		ConverterUtils utils = new ConverterUtils(system,schemaRegistry); 
+		ConverterUtils utils = new ConverterUtils(schemaRegistry); 
 		AbstractConverter converter = utils.getConverterForInterface(interfaceName);
 		if(converter == null) {
 
@@ -76,7 +75,7 @@ public class Main {
 		
 
 		if(testing) { 
-		//	writeSomeData(system,materializer);
+		 	writeSomeData(system,materializer);
 		}
 
 		logger.debug("Ready");

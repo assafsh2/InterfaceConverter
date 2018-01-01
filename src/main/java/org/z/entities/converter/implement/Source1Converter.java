@@ -84,13 +84,13 @@ public class Source1Converter extends AbstractConverter {
 
 		String externalSystemId = entityReport.getId();
 
-		synchronized (obj) {
-			if(!set.contains(externalSystemId)) {	
-				System.out.println("New externalSystemId "+externalSystemId);
-				publishToCreationTopic(externalSystemId, metadata, lastOffset.get(), partition);
-				set.add(externalSystemId);			
-			}
+
+		if(!set.contains(externalSystemId)) {	
+			System.out.println("New externalSystemId "+externalSystemId);
+			publishToCreationTopic(externalSystemId, metadata, lastOffset.get(), partition);
+			set.add(externalSystemId);			
 		}
+
 
 		BasicEntityAttributes basicEntity = BasicEntityAttributes.newBuilder().setCoordinate(coordinate) 
 				.setIsNotTracked(false)
@@ -141,8 +141,8 @@ public class Source1Converter extends AbstractConverter {
 
 		return detectionEvent;
 	} 
-	
-	
+
+
 
 	public Properties getProperties(boolean isAvro) {
 
