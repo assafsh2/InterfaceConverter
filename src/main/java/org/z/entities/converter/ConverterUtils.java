@@ -204,7 +204,7 @@ public class ConverterUtils {
 		return new AtomicLong(lastOffset);
 	}
 
-	private Properties getKafkaConsumerProperties() {
+	public Properties getKafkaConsumerProperties() {
 
 		String kafkaIP = System.getenv("KAFKA_ADDRESS");
 		String schemaRegistryIP = System.getenv("SCHEMA_REGISTRY_IP");
