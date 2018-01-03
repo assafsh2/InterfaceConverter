@@ -82,8 +82,8 @@ public class Source1Converter extends AbstractConverter {
 				.setLong$(entityReport.getXlong())
 				.build();
 
-		//int partition = utils.getPartitionByKey(interfaceName,entityReport.getId(), map.keySet().size());
-		//AtomicLong lastOffset = map.get(partition);
+		int partition = utils.getPartitionByKey(interfaceName,entityReport.getId(), map.keySet().size());
+		AtomicLong lastOffset = map.get(partition);
 
 		String externalSystemId = entityReport.getId();
 
