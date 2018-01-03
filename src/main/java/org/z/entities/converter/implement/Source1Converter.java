@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import joptsimple.internal.Strings;
@@ -40,6 +41,7 @@ public class Source1Converter extends AbstractConverter {
 	private ConcurrentHashSet<String> set;
 	private KafkaProducer<Object, Object> producer;
 	private Object obj= new Object();
+	private AtomicInteger partition;
 	final static public Logger logger = Logger.getLogger(Source1Converter.class);	
 	static {
 		ConverterUtils.setDebugLevel(logger); 
@@ -49,6 +51,7 @@ public class Source1Converter extends AbstractConverter {
 		super(interfaceName,map);
 		set = new ConcurrentHashSet<String>();
 		producer = new KafkaProducer<>(getProperties(true));
+		partition = new AtomicInteger();
 
 	}
 
@@ -79,15 +82,15 @@ public class Source1Converter extends AbstractConverter {
 				.setLong$(entityReport.getXlong())
 				.build();
 
-		int partition = utils.getPartitionByKey(interfaceName,entityReport.getId(), map.keySet().size());
-		AtomicLong lastOffset = map.get(partition);
+		//int partition = utils.getPartitionByKey(interfaceName,entityReport.getId(), map.keySet().size());
+		//AtomicLong lastOffset = map.get(partition);
 
 		String externalSystemId = entityReport.getId();
 
 
 		if(!set.contains(externalSystemId)) {	
 			System.out.println("New externalSystemId "+externalSystemId);
-			publishToCreationTopic(externalSystemId, metadata, lastOffset.get(), partition);
+			publishToCreationTopic(externalSystemId, metadata);
 			set.add(externalSystemId);			
 		}
 
@@ -97,7 +100,7 @@ public class Source1Converter extends AbstractConverter {
 				.setSourceName(entityReport.getSource_name())
 				.build();
 
-		System.out.println("ExternalSystemID "+entityReport.getId()+" partition "+partition+ " offset "+lastOffset); 
+		System.out.println("ExternalSystemID "+entityReport.getId()+" partition "+partition); 
 		GeneralEntityAttributes entity = GeneralEntityAttributes.newBuilder()
 				.setCategory(Category.valueOf(entityReport.getCategory()))
 				.setCourse(entityReport.getCourse())
@@ -110,16 +113,16 @@ public class Source1Converter extends AbstractConverter {
 				.setSpeed(entityReport.getSpeed())
 				.setBasicAttributes(basicEntity)
 				.setMetadata(metadata)
-				.setLastStateOffset(lastOffset.get())
+				.setLastStateOffset(0)
 				.build();
 
-		lastOffset.incrementAndGet(); 
+		//lastOffset.incrementAndGet(); 
 		return new ProducerRecord<>(interfaceName ,entityReport.getId(), entity);
 	}
 
-	private void publishToCreationTopic(String externalSystemId, String metadata, long lastOffset, int partition) {
+	private void publishToCreationTopic(String externalSystemId, String metadata) {
 		try {
-			ProducerRecord<Object, Object> record = new ProducerRecord<>("create",externalSystemId,getGenericRecordForCreation(externalSystemId, metadata,lastOffset,partition));
+			ProducerRecord<Object, Object> record = new ProducerRecord<>("create",externalSystemId,getGenericRecordForCreation(externalSystemId, metadata));
 			utils.getKafkaProducer().send(record); 
 			System.out.println("Sent to create "+record);
 		} catch (IOException e) {
@@ -129,14 +132,14 @@ public class Source1Converter extends AbstractConverter {
 		}
 	}
 
-	protected GenericRecord getGenericRecordForCreation(String externalSystemID, String metadata,long lastOffset,int partition)
+	protected GenericRecord getGenericRecordForCreation(String externalSystemID, String metadata)
 			throws IOException, RestClientException { 
 		DetectionEvent detectionEvent = DetectionEvent.newBuilder()
 				.setSourceName(interfaceName)
 				.setExternalSystemID(externalSystemID)
-				.setDataOffset(lastOffset)
+				.setDataOffset(0)
 				.setMetadata(metadata)
-				.setPartition(partition)
+				.setPartition(partition.getAndAdd(1))
 				.build();
 
 		return detectionEvent;
